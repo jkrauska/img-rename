@@ -13,7 +13,7 @@ def list_images(path="."):
     return [f for f in os.listdir(path) if is_image(f)]
 
 def is_image(f):
-    return imghdr.what(f) in ['jpeg', 'gif', 'png']
+    return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
 def time_as_filename(time):
     return time.replace(' ', '_').replace(':', '.')
