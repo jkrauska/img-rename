@@ -3,6 +3,7 @@
 import os
 import Image
 import imghdr
+import argparse
 
 DATE_TIME_ORIGINAL_TAG = 0x9003
 
@@ -11,7 +12,8 @@ def get_date_time_original(file_name):
     info = i._getexif()
     return info[DATE_TIME_ORIGINAL_TAG]
 
-def list_images(path="."):
+def list_image_files(path=".", recursive=False):
+    # TODO: add recursive listings
     return [f for f in os.listdir(path) if is_image(f)]
 
 def is_image(f):
@@ -26,8 +28,7 @@ def get_new_name(file_name):
     new_name = time_as_filename(t)
     return new_name + ext.lower()
 
-def rename_files(path):
-    files = list_images()
+def rename(files):
     for old_name in files:
         new_name = get_new_name(old_name)
         if old_name == new_name: 
@@ -39,14 +40,11 @@ def rename_files(path):
             os.rename(old_name, new_name)
 
 if __name__=='__main__':
-    #rename_files('.')
-    
     parser = argparse.ArgumentParser(description="Rename image files based on the EXIF OriginalTime field.")
     parser.add_argument('-r', '--recursive', help='rename subdirectories recursively', action='store_true')
     parser.add_argument('-d', '--directory', help='directory of files to rename (defaults to .)', default='.')
     args = parser.parse_args()
     
-    print "rename",
-    print 'recursive', if args.recursive else "not recursive",
-    print "from", args.directory
+    files = list_image_files(args.directory, args.recursive)
+    rename(files)
 
