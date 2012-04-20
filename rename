@@ -53,7 +53,7 @@ def rename_all(old_names, new_names):
         else:
             print '--', old
             print '++', new
-            os.rename(old_path, new_path)
+            os.rename(old, new)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
