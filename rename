@@ -12,9 +12,14 @@ def get_date_time_original(file_name):
     info = i._getexif()
     return info[DATE_TIME_ORIGINAL_TAG]
 
-def list_image_files(path=".", recursive=False):
-    # TODO: add recursive listings
-    return [f for f in os.listdir(path) if is_image(f)]
+def list_files(path, recursive):
+    files = []
+    for f in os.listdir(path):
+        files.append(os.path.abspath(os.path.join(path,f)))
+    return files
+
+def list_image_files(path, recursive):
+    return [f for f in list_files(path, recursive) if is_image(f)]
 
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
@@ -29,15 +34,18 @@ def get_new_name(file_name):
     return new_name + ext.lower()
 
 def rename(files):
-    for old_name in files:
-        new_name = get_new_name(old_name)
+    for old_path in files:
+        path, old_name = os.path.split(old_path)
+        new_name = get_new_name(old_path)
         if old_name == new_name: 
             continue
         if os.path.exists(new_name):
             print "WARN: could not rename '%s' to '%s' (already exists)" % (old_name, new_name)
         else:
-            print new_name, '<--', old_name
-            os.rename(old_name, new_name)
+            new_path = os.path.join(path, new_name)
+            print "-", old_path
+            print "+", new_path
+            os.rename(old_path, new_path)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description="Rename image files based on the EXIF OriginalTime field.")
