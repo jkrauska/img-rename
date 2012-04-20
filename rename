@@ -28,13 +28,10 @@ def list_image_files(path, recursive):
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
-def time_as_filename(t):
-    return t.replace(' ', '_').replace(':', '.')
-
 def get_new_name(file_name):
     _, ext = os.path.splitext(file_name)
     t = get_date_time_original(file_name)
-    new_name = time_as_filename(t)
+    new_name = t.replace(' ', '_').replace(':', '.')
     return new_name + ext.lower()
 
 def rename(files):
