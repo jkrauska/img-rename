@@ -23,15 +23,18 @@ def list_files(path, recursive):
     return files
 
 def list_image_files(path, recursive):
-    return [f for f in list_files(path, recursive) if is_image(f)]
+    files = [f for f in list_files(path, recursive) if is_image(f)]
+    files = map(os.path.abspath, files)
+    return files
 
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
-def get_new_name(file_name):
-    _, ext = os.path.splitext(file_name)
-    t = get_date_time_original(file_name)
-    new_name = t.replace(' ', '_').replace(':', '.')
+def get_new_name(file_path):
+    _, ext = os.path.splitext(file_path)
+    directory, _ = os.path.split(file_path)
+    t = get_date_time_original(file_path)
+    new_name = os.path.join(directory, t.replace(' ', '_').replace(':', '.'))
     return new_name + ext.lower()
 
 def get_postfix(path):
@@ -42,20 +45,18 @@ def get_postfix(path):
     
 def rename(files):
     for old_path in files:
-        path, old_name = os.path.split(old_path)
-        new_name = get_new_name(old_path)
-        if old_name == new_name: 
+        new_path = get_new_name(old_path)
+        if old_path == new_path: 
             continue
-        if os.path.exists(new_name):
-            print "WARN: could not rename '%s' to '%s' (already exists)" % (old_name, new_name)
+        if os.path.exists(new_path):
+            print "WARN: could not rename '%s' to '%s' (already exists)" % (old_path, new_path)
         else:
-            new_path = os.path.join(path, new_name)
-            print "-", old_path
-            print "+", new_path
-            os.rename(old_path, new_path)
+            print '-', old_path
+            print '+', new_path
+#            os.rename(old_path, new_path)
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description="Rename image files based on the EXIF OriginalTime field.")
+    parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
     parser.add_argument('-r', '--recursive', help='rename subdirectories recursively', action='store_true')
     parser.add_argument('-d', '--directory', help='directory of files to rename (defaults to .)', default='.')
     args = parser.parse_args()
