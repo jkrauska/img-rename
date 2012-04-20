@@ -17,13 +17,13 @@ def list_images(path="."):
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
-def time_as_filename(time):
-    return time.replace(' ', '_').replace(':', '.')
+def time_as_filename(t):
+    return t.replace(' ', '_').replace(':', '.')
 
 def get_new_name(file_name):
     _, ext = os.path.splitext(file_name)
-    time = get_date_time_original(file_name)
-    new_name = time_as_filename(time)
+    t = get_date_time_original(file_name)
+    new_name = time_as_filename(t)
     return new_name + ext.lower()
 
 def rename_files(path):
@@ -39,5 +39,14 @@ def rename_files(path):
             os.rename(old_name, new_name)
 
 if __name__=='__main__':
-    rename_files('.')
+    #rename_files('.')
+    
+    parser = argparse.ArgumentParser(description="Rename image files based on the EXIF OriginalTime field.")
+    parser.add_argument('-r', '--recursive', help='rename subdirectories recursively', action='store_true')
+    parser.add_argument('-d', '--directory', help='directory of files to rename (defaults to .)', default='.')
+    args = parser.parse_args()
+    
+    print "rename",
+    print 'recursive', if args.recursive else "not recursive",
+    print "from", args.directory
 
