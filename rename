@@ -22,27 +22,26 @@ def list_files(path, recursive):
             for d in dirs: dirs.pop()
     return files
 
-def list_image_files(path, recursive):
-    files = [f for f in list_files(path, recursive) if is_image(f)]
-    files = map(os.path.abspath, files)
-    return files
+def filter_images(files):
+    return [f for f in files if is_image(f)]
 
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
 def get_new_name(file_path):
     _, ext = os.path.splitext(file_path)
+    ext = ext.lower()
     directory, _ = os.path.split(file_path)
     t = get_date_time_original(file_path)
-    new_name = os.path.join(directory, t.replace(' ', '_').replace(':', '.'))
-    return new_name + ext.lower()
-
-def get_postfix(path):
+    new_name = t.replace(' ', '_').replace(':', '.')
     n = 0
-    while os.path.exists(path+'.'+str(n)): 
+    while True: 
+        f = os.path.join(directory, "%s.%d%s" % (new_name, n, ext))
         n +=1
-    return str(n)
-    
+        if not os.path.exists(f):
+            break
+    return f
+
 def rename(files):
     for old_path in files:
         new_path = get_new_name(old_path)
@@ -51,6 +50,7 @@ def rename(files):
         if os.path.exists(new_path):
             print "WARN: could not rename '%s' to '%s' (already exists)" % (old_path, new_path)
         else:
+            print
             print '-', old_path
             print '+', new_path
 #            os.rename(old_path, new_path)
@@ -61,6 +61,8 @@ if __name__=='__main__':
     parser.add_argument('-d', '--directory', help='directory of files to rename (defaults to .)', default='.')
     args = parser.parse_args()
 
-    files = list_image_files(args.directory, args.recursive)
+    files = list_files(args.directory, args.recursive)
+    files = filter_images(files)
+    files = map(os.path.abspath, files)
     rename(files)
 
