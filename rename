@@ -34,6 +34,12 @@ def get_new_name(file_name):
     new_name = t.replace(' ', '_').replace(':', '.')
     return new_name + ext.lower()
 
+def get_postfix(path):
+    n = 0
+    while os.path.exists(path+'.'+str(n)): 
+        n +=1
+    return str(n)
+    
 def rename(files):
     for old_path in files:
         path, old_name = os.path.split(old_path)
