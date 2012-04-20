@@ -4,6 +4,7 @@ import os
 import Image
 import imghdr
 import argparse
+import itertools
 
 DATE_TIME_ORIGINAL_TAG = 0x9003
 
@@ -34,26 +35,25 @@ def get_new_name(file_path):
     directory, _ = os.path.split(file_path)
     t = get_date_time_original(file_path)
     new_name = t.replace(' ', '_').replace(':', '.')
-    n = 0
-    while True: 
+    for n in itertools.count():
         f = os.path.join(directory, "%s.%d%s" % (new_name, n, ext))
-        n +=1
         if not os.path.exists(f):
             break
     return f
 
-def rename(files):
-    for old_path in files:
-        new_path = get_new_name(old_path)
-        if old_path == new_path: 
+def extract_names(files):
+    return [get_new_name(f) for f in files]
+
+def rename_all(old_names, new_names):
+    for old, new in zip(old_names, new_names):
+        if old == new:
             continue
-        if os.path.exists(new_path):
-            print "WARN: could not rename '%s' to '%s' (already exists)" % (old_path, new_path)
+        if os.path.exists(new):
+            print "WARN: could not rename '%s' to '%s' (already exists)" % (old, new)
         else:
-            print
-            print '-', old_path
-            print '+', new_path
-#            os.rename(old_path, new_path)
+            print '--', old
+            print '++', new
+            os.rename(old_path, new_path)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
@@ -64,5 +64,6 @@ if __name__=='__main__':
     files = list_files(args.directory, args.recursive)
     files = filter_images(files)
     files = map(os.path.abspath, files)
-    rename(files)
+    new_names = extract_names(files)
+    rename_all(files, new_names)
 
