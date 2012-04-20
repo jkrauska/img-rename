@@ -14,8 +14,12 @@ def get_date_time_original(file_name):
 
 def list_files(path, recursive):
     files = []
-    for f in os.listdir(path):
-        files.append(os.path.abspath(os.path.join(path,f)))
+    for dirpath, dirs, filenames in os.walk(path):
+        for f in filenames:
+            full = os.path.join(dirpath, f)
+            files.append(full)
+        if not recursive:
+            for d in dirs: dirs.pop()
     return files
 
 def list_image_files(path, recursive):
@@ -52,7 +56,7 @@ if __name__=='__main__':
     parser.add_argument('-r', '--recursive', help='rename subdirectories recursively', action='store_true')
     parser.add_argument('-d', '--directory', help='directory of files to rename (defaults to .)', default='.')
     args = parser.parse_args()
-    
+
     files = list_image_files(args.directory, args.recursive)
     rename(files)
 
