@@ -71,10 +71,11 @@ if __name__=='__main__':
 
     files = list_files(args.directory, args.recursive)
     images = filter(is_image, files)
-    old_names = map(os.path.abspath, images)
-    new_names = map(new_name, old_names)
-    pairs = zip(old_names, new_names)
-    pairs = remove_duplicates(pairs)
-    pairs = ensure_uniqueness(pairs)
-    map(rename, pairs)
+    if images:
+        old_names = map(os.path.abspath, images)
+        new_names = map(new_name, old_names)
+        pairs = zip(old_names, new_names)
+        pairs = remove_duplicates(pairs)
+        pairs = ensure_uniqueness(pairs)
+        map(rename, pairs)
     
