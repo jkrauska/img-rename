@@ -53,8 +53,8 @@ if __name__=='__main__':
     args = parser.parse_args()
 
     files = list_files(args.directory, args.recursive)
-    files = filter(is_image, files)
-    files = map(os.path.abspath, files)
-    new_names = map(new_name, files)
-    rename_all(files, new_names)
+    images = filter(is_image, files)
+    old_names = map(os.path.abspath, images)
+    new_names = map(new_name, old_names)
+    rename_all(old_names, new_names)
 
