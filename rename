@@ -27,12 +27,10 @@ def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
 def new_name(file_path):
-    _, ext = os.path.splitext(file_path)
-    ext = ext.lower()
-    directory, _ = os.path.split(file_path)
-    t = get_date_time_original(file_path)
-    new_name = t.replace(' ', '_').replace(':', '.')
-    return os.path.join(directory, "%s.0%s" % (new_name,ext))
+    dirname = os.path.dirname(file_path)
+    name = get_date_time_original(file_path).replace(' ', '_').replace(':', '.')
+    ext = os.path.splitext(file_path)[1].lower()
+    return os.path.join(dirname, "%s.0%s" % (name,ext))
 
 def rename(pair):
     old, new = pair
