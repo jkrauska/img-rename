@@ -45,7 +45,10 @@ def rename_all(old_names, new_names):
 #            os.rename(old, new)
 
 def remove_duplicates(old, new):
-    return zip(*filter(lambda (x, y): x!=y, zip(old, new)))
+    is_dissimilar = lambda (x, y): x!=y
+    zipped = zip(old, new)
+    zipped = filter(is_dissimilar, zipped)
+    return zip(*zipped)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
