@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os
+import re
 import Image
 import imghdr
 import argparse
@@ -49,14 +50,11 @@ def rename(pair):
 def remove_duplicates(pairs):
     return filter(lambda (x, y): x!=y, pairs)
 
-def bump(name):
-    dirname, basename = os.path.split(name)
-    root, ext = os.path.splitext(basename)
-    r = root.split('.')
-    r[-1] = str(int(r[-1]) + 1)
-    root = '.'.join(r)
-    basename = root+ext
-    return os.path.join(dirname,basename)
+def bump_name(name):
+    root, ext = os.path.splitext(name)
+    prefix, version = re.match(r"(.*[^\d]+)([\d]+)$", root).groups()
+    root = prefix + str(int(version)+1).rjust(len(version), '0')
+    return root+ext
 
 def ensure_uniqueness(names):
     is_used = lambda name: os.path.exists(name) or name in unique_names
@@ -64,7 +62,7 @@ def ensure_uniqueness(names):
     unique_names = []
     for name in new:
         while is_used(name):
-            name = bump(name)
+            name = bump_name(name)
         unique_names.append(name)
     return zip(old, unique_names)
 
