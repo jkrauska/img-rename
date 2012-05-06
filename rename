@@ -34,10 +34,10 @@ def new_name(file_path):
 
 def rename(pair):
     old, new = pair
+    print_change(old, new)
     if os.path.exists(new):
         print "WARN: file already exists! Could not rename."
         return
-    print_change(old, new)
 #    os.rename(old, new)
 
 def print_change(old, new):
