@@ -32,13 +32,16 @@ def new_name(file_path):
     directory, _ = os.path.split(file_path)
     t = get_date_time_original(file_path)
     new_name = t.replace(' ', '_').replace(':', '.')
-    return os.path.join(directory, new_name+ext)
+    return os.path.join(directory, "%s.0%s" % (new_name,ext))
 
 def rename_all(old_names, new_names):
     for old, new in zip(old_names, new_names):
         if os.path.exists(new):
-            print "WARN: could not rename '%s' to '%s' (already exists)" % (old, new)
+            print "WARN: file already exists! Skipped:"
+            print '|-', old
+            print '|+', new
         else:
+            # TODO: use os.path.commonprefix(list) to prettify printing
             print '--', old
             print '++', new
             print
@@ -49,6 +52,24 @@ def remove_duplicates(old, new):
     zipped = zip(old, new)
     zipped = filter(is_dissimilar, zipped)
     return zip(*zipped)
+
+def bump(name):
+    dirname, basename = os.path.split(name)
+    root, ext = os.path.splitext(basename)
+    r = root.split('.')
+    r[-1] = str(int(r[-1]) + 1)
+    root = '.'.join(r)
+    basename = root+ext
+    return os.path.join(dirname,basename)
+
+def ensure_uniqueness(new):
+    is_used = lambda name: os.path.exists(name) or name in unique
+    unique = []
+    for name in new:
+        while is_used(name):
+            name = bump(name)
+        unique.append(name)
+    return unique
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
@@ -61,5 +82,6 @@ if __name__=='__main__':
     old_names = map(os.path.abspath, images)
     new_names = map(new_name, old_names)
     old_names, new_names = remove_duplicates(old_names, new_names)
+    new_names = ensure_uniqueness(new_names)
     rename_all(old_names, new_names)
 
