@@ -36,8 +36,6 @@ def new_name(file_path):
 
 def rename_all(old_names, new_names):
     for old, new in zip(old_names, new_names):
-        if old == new:
-            continue
         if os.path.exists(new):
             print "WARN: could not rename '%s' to '%s' (already exists)" % (old, new)
         else:
@@ -45,6 +43,9 @@ def rename_all(old_names, new_names):
             print '++', new
             print
 #            os.rename(old, new)
+
+def remove_duplicates(old, new):
+    return zip(*filter(lambda (x, y): x!=y, zip(old, new)))
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
@@ -56,5 +57,6 @@ if __name__=='__main__':
     images = filter(is_image, files)
     old_names = map(os.path.abspath, images)
     new_names = map(new_name, old_names)
+    old_names, new_names = remove_duplicates(old_names, new_names)
     rename_all(old_names, new_names)
 
