@@ -4,7 +4,6 @@ import os
 import Image
 import imghdr
 import argparse
-import itertools
 
 DATE_TIME_ORIGINAL_TAG = 0x9003
 
@@ -34,24 +33,21 @@ def new_name(file_path):
     new_name = t.replace(' ', '_').replace(':', '.')
     return os.path.join(directory, "%s.0%s" % (new_name,ext))
 
-def rename_all(old_names, new_names):
-    for old, new in zip(old_names, new_names):
-        if os.path.exists(new):
-            print "WARN: file already exists! Skipped:"
-            print '|-', old
-            print '|+', new
-        else:
-            # TODO: use os.path.commonprefix(list) to prettify printing
-            print '--', old
-            print '++', new
-            print
-#            os.rename(old, new)
+def rename(pair):
+    old, new = pair
+    if os.path.exists(new):
+        print "WARN: file already exists! Skipped:"
+        print '|-', old
+        print '|+', new
+    else:
+        # TODO: use os.path.commonprefix(list) to prettify printing
+        print '--', old
+        print '++', new
+        print
+#        os.rename(old, new)
 
-def remove_duplicates(old, new):
-    is_dissimilar = lambda (x, y): x!=y
-    zipped = zip(old, new)
-    zipped = filter(is_dissimilar, zipped)
-    return zip(*zipped)
+def remove_duplicates(pairs):
+    return filter(lambda (x, y): x!=y, pairs)
 
 def bump(name):
     dirname, basename = os.path.split(name)
@@ -62,14 +58,15 @@ def bump(name):
     basename = root+ext
     return os.path.join(dirname,basename)
 
-def ensure_uniqueness(new):
-    is_used = lambda name: os.path.exists(name) or name in unique
-    unique = []
+def ensure_uniqueness(names):
+    is_used = lambda name: os.path.exists(name) or name in unique_names
+    old, new = zip(*names)
+    unique_names = []
     for name in new:
         while is_used(name):
             name = bump(name)
-        unique.append(name)
-    return unique
+        unique_names.append(name)
+    return zip(old, unique_names)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
@@ -81,7 +78,8 @@ if __name__=='__main__':
     images = filter(is_image, files)
     old_names = map(os.path.abspath, images)
     new_names = map(new_name, old_names)
-    old_names, new_names = remove_duplicates(old_names, new_names)
-    new_names = ensure_uniqueness(new_names)
-    rename_all(old_names, new_names)
-
+    pairs = zip(old_names, new_names)
+    pairs = remove_duplicates(pairs)
+    pairs = ensure_uniqueness(pairs)
+    map(rename, pairs)
+    
