@@ -19,12 +19,9 @@ def list_files(path, recursive):
         for f in filenames:
             full = os.path.join(dirpath, f)
             files.append(full)
-        if not recursive:
-            for d in dirs: dirs.pop()
+        if not recursive: 
+            break
     return files
-
-def filter_images(files):
-    return [f for f in files if is_image(f)]
 
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
@@ -42,6 +39,7 @@ def get_new_name(file_path):
     return f
 
 def extract_names(files):
+    # TODO: her maa jeg ta hensyn til de som alt er brukt, i tillegg til hvilke som ligger paa disk
     return [get_new_name(f) for f in files]
 
 def rename_all(old_names, new_names):
@@ -62,8 +60,8 @@ if __name__=='__main__':
     args = parser.parse_args()
 
     files = list_files(args.directory, args.recursive)
-    files = filter_images(files)
+    files = filter(is_image, files)
     files = map(os.path.abspath, files)
     new_names = extract_names(files)
-    rename_all(files, new_names)
+#    rename_all(files, new_names)
 
