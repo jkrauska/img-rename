@@ -51,9 +51,10 @@ def remove_duplicates(pairs):
     return filter(lambda (x, y): x!=y, pairs)
 
 def bump_name(name):
+    def bump(m):
+        return m.group(1) + str(int(m.group(2))+1)
     root, ext = os.path.splitext(name)
-    prefix, version = re.match(r"(.*[^\d]+)([\d]+)$", root).groups()
-    root = prefix + str(int(version)+1)
+    root = re.sub(r"(.*[^\d]+)([\d]+)$", bump, root)
     return root+ext
 
 def ensure_uniqueness(names):
