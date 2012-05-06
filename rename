@@ -26,21 +26,16 @@ def list_files(path, recursive):
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
-def get_new_name(file_path):
+def create_new_name(file_path):
     _, ext = os.path.splitext(file_path)
     ext = ext.lower()
     directory, _ = os.path.split(file_path)
     t = get_date_time_original(file_path)
     new_name = t.replace(' ', '_').replace(':', '.')
-    for n in itertools.count():
-        f = os.path.join(directory, "%s.%d%s" % (new_name, n, ext))
-        if not os.path.exists(f):
-            break
-    return f
+    return os.path.join(directory, new_name+ext)
 
-def extract_names(files):
-    # TODO: her maa jeg ta hensyn til de som alt er brukt, i tillegg til hvilke som ligger paa disk
-    return [get_new_name(f) for f in files]
+def create_new_names(files):
+    return [create_new_name(f) for f in files]
 
 def rename_all(old_names, new_names):
     for old, new in zip(old_names, new_names):
@@ -51,7 +46,8 @@ def rename_all(old_names, new_names):
         else:
             print '--', old
             print '++', new
-            os.rename(old, new)
+            print
+#            os.rename(old, new)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
@@ -62,6 +58,6 @@ if __name__=='__main__':
     files = list_files(args.directory, args.recursive)
     files = filter(is_image, files)
     files = map(os.path.abspath, files)
-    new_names = extract_names(files)
-#    rename_all(files, new_names)
+    new_names = create_new_names(files)
+    rename_all(files, new_names)
 
