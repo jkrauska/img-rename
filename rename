@@ -26,16 +26,13 @@ def list_files(path, recursive):
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
-def create_new_name(file_path):
+def new_name(file_path):
     _, ext = os.path.splitext(file_path)
     ext = ext.lower()
     directory, _ = os.path.split(file_path)
     t = get_date_time_original(file_path)
     new_name = t.replace(' ', '_').replace(':', '.')
     return os.path.join(directory, new_name+ext)
-
-def create_new_names(files):
-    return [create_new_name(f) for f in files]
 
 def rename_all(old_names, new_names):
     for old, new in zip(old_names, new_names):
@@ -58,6 +55,6 @@ if __name__=='__main__':
     files = list_files(args.directory, args.recursive)
     files = filter(is_image, files)
     files = map(os.path.abspath, files)
-    new_names = create_new_names(files)
+    new_names = map(new_name, files)
     rename_all(files, new_names)
 
