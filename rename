@@ -37,15 +37,15 @@ def new_name(file_path):
 def rename(pair):
     old, new = pair
     if os.path.exists(new):
-        print "WARN: file already exists! Skipped:"
-        print '|-', old
-        print '|+', new
-    else:
-        # TODO: use os.path.commonprefix(list) to prettify printing
-        print '--', old
-        print '++', new
-        print
-#        os.rename(old, new)
+        print "WARN: file already exists! Could not rename."
+        return
+    print_change(old, new)
+#    os.rename(old, new)
+
+def print_change(old, new):
+    print os.path.dirname(os.path.commonprefix((old, new)))
+    print ' -', os.path.basename(old)
+    print ' +', os.path.basename(new)
 
 def remove_duplicates(pairs):
     return filter(lambda (x, y): x!=y, pairs)
