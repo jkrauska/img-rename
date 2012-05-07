@@ -37,8 +37,8 @@ def rename(pair):
     print_change(old, new)
     if os.path.exists(new):
         print "WARN: file already exists! Could not rename."
-        return
-#    os.rename(old, new)
+    else:
+        os.rename(old, new)
 
 def print_change(old, new):
     print os.path.dirname(os.path.commonprefix((old, new)))
@@ -54,6 +54,8 @@ def bump_name(path):
     return re.sub("(.*\.+)([\d]+)(\..*)$", inc, path)
 
 def ensure_uniqueness(names):
+    if not names:
+        return []
     is_used = lambda name: os.path.exists(name) or name in unique_names
     old, new = zip(*names)
     unique_names = []
