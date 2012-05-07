@@ -32,10 +32,14 @@ def new_name(file_path):
     ext = os.path.splitext(file_path)[1].lower()
     return os.path.join(dirname, "%s.0%s" % (name,ext))
     
+def color(text, color):
+    cmap = {'red': '0;31', 'green':'0;32'}
+    return "\33["+cmap[color]+"m"+text+"\33[0m"
+
 def print_change(old, new):
     print os.path.dirname(os.path.commonprefix((old, new)))
-    print ' -', os.path.basename(old)
-    print ' +', os.path.basename(new)
+    print ' ', color(os.path.basename(old), 'red'), '->',
+    print color(os.path.basename(new), 'green')
 
 def remove_duplicates(pairs):
     return filter(lambda (x, y): x!=y, pairs)
