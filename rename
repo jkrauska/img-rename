@@ -66,12 +66,12 @@ def rename(pair):
     if os.path.exists(new):
         print "WARN: file already exists! Could not rename:"
     else:
-        pass#os.rename(old, new)
+        os.rename(old, new)
     print_change(old, new)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
-    parser.add_argument('-r', '--recursive', help='rename subdirectories recursively', action='store_true')
+    parser.add_argument('-r', '--recursive', help='enable recursive renaming in subdirectories', action='store_true')
     parser.add_argument('-d', '--directory', help='directory of files to rename (defaults to .)', default='.')
     args = parser.parse_args()
 
@@ -84,4 +84,4 @@ if __name__=='__main__':
         pairs = remove_duplicates(pairs)
         pairs = ensure_uniqueness(pairs)
         map(rename, pairs)
-    
+
