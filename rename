@@ -31,15 +31,7 @@ def new_name(file_path):
     name = get_date_time_original(file_path).replace(' ', '_').replace(':', '.')
     ext = os.path.splitext(file_path)[1].lower()
     return os.path.join(dirname, "%s.0%s" % (name,ext))
-
-def rename(pair):
-    old, new = pair
-    print_change(old, new)
-    if os.path.exists(new):
-        print "WARN: file already exists! Could not rename."
-    else:
-        os.rename(old, new)
-
+    
 def print_change(old, new):
     print os.path.dirname(os.path.commonprefix((old, new)))
     print ' -', os.path.basename(old)
@@ -65,6 +57,14 @@ def ensure_uniqueness(names):
         unique_names.append(name)
     return zip(old, unique_names)
 
+def rename(pair):
+    old, new = pair
+    if os.path.exists(new):
+        print "WARN: file already exists! Could not rename:"
+    else:
+        pass#os.rename(old, new)
+    print_change(old, new)
+
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
     parser.add_argument('-r', '--recursive', help='rename subdirectories recursively', action='store_true')
@@ -73,8 +73,8 @@ if __name__=='__main__':
 
     files = list_files(args.directory, args.recursive)
     images = filter(is_image, files)
-    if images:
-        old_names = map(os.path.abspath, images)
+    old_names = map(os.path.abspath, images)
+    if old_names:
         new_names = map(new_name, old_names)
         pairs = zip(old_names, new_names)
         pairs = remove_duplicates(pairs)
