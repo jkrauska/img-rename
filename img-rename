@@ -28,7 +28,11 @@ def is_image(f):
 
 def new_name(file_path):
     dirname = os.path.dirname(file_path)
-    name = get_date_time_original(file_path).replace(' ', '_').replace(':', '.')
+    try:
+        time_taken = get_date_time_original(file_path)
+    except KeyError:
+        return file_path
+    name = time_taken.replace(' ', '_').replace(':', '.')
     ext = os.path.splitext(file_path)[1].lower()
     return os.path.join(dirname, "%s.0%s" % (name,ext))
     
