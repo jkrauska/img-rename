@@ -30,7 +30,7 @@ def new_name(file_path):
     dirname = os.path.dirname(file_path)
     try:
         time_taken = get_date_time_original(file_path)
-    except KeyError:
+    except Exception:
         return file_path
     name = time_taken.replace(' ', '_').replace(':', '.')
     ext = os.path.splitext(file_path)[1].lower()
