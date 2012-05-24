@@ -21,29 +21,6 @@ def rename_files(directory, recursive):
         total = len(map(rename, pairs))
         print "%d pictures renamed" % total
 
-def rename(pair):
-    old, new = pair
-    while os.path.exists(new):
-        print "WARN: a file with the following name already exists:"
-        print "  ", new
-        default = suggest_postfix(new)
-        postfix = raw_input("Please specify a prefix to be appended [%s]: " % default)
-        if not postfix:
-            postfix = default
-        new = set_file_postfix(new, postfix)
-    os.rename(old, new)
-    print_change(old, new)
-
-def suggest_postfix(file_path):
-    import itertools
-    for i in itertools.count():
-        if not os.path.exists(set_file_postfix(file_path, str(i))):
-            return str(i)
-
-def get_date_time_original(file_name):
-    info = Image.open(file_name)._getexif()
-    return info[DATE_TIME_ORIGINAL_TAG]
-
 def list_files(path, recursive):
     files = []
     for dirpath, dirs, filenames in os.walk(path):
@@ -57,6 +34,9 @@ def list_files(path, recursive):
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
+def needs_renaming(path):
+    return not re.match(".*"+FILENAME_PATTERN, path)
+
 def create_new_path(old_path):
     dirname = os.path.dirname(old_path)
     try:
@@ -66,10 +46,38 @@ def create_new_path(old_path):
     name = time_taken.replace(' ', '-').replace(':', '.')
     ext = os.path.splitext(old_path)[1].lower()
     return os.path.join(dirname, "%s%s" % (name,ext))
-    
-def color(text, color):
-    cmap = {'red': '0;31', 'green':'0;32'}
-    return "\33["+cmap[color]+"m"+text+"\33[0m"
+
+def get_date_time_original(file_name):
+    info = Image.open(file_name)._getexif()
+    return info[DATE_TIME_ORIGINAL_TAG]
+
+def rename(pair):
+    old, new = pair
+    while os.path.exists(new):
+        postfix = prompt_postfix(new)
+        new = set_file_postfix(new, postfix)
+    os.rename(old, new)
+    print_change(old, new)
+
+def set_file_postfix(file_path, postfix):
+    def substitute_postfix(m):
+        return m.group(1) + "-" + postfix + m.group(3)
+    return re.sub(FILENAME_PATTERN, substitute_postfix, file_path)
+
+def prompt_postfix(file_path):
+    print "WARN: a file with the following name already exists:"
+    print "  ", file_path
+    default = suggest_postfix(file_path)
+    postfix = raw_input("Please specify a prefix to be appended [%s]: " % default)
+    if not postfix:
+        return default
+    return postfix
+
+def suggest_postfix(file_path):
+    import itertools
+    for i in itertools.count():
+        if not os.path.exists(set_file_postfix(file_path, str(i))):
+            return str(i)
 
 def print_change(old, new):
     print os.path.dirname(os.path.commonprefix((old, new)))
@@ -77,13 +85,9 @@ def print_change(old, new):
     print color(os.path.basename(new), 'green')
     print
 
-def set_file_postfix(file_path, postfix):
-    def substitute_postfix(m):
-        return m.group(1) + "-" + postfix + m.group(3)
-    return re.sub(FILENAME_PATTERN, substitute_postfix, file_path)
-
-def needs_renaming(path):
-    return not re.match(".*"+FILENAME_PATTERN, path)
+def color(text, color):
+    cmap = {'red': '0;31', 'green':'0;32'}
+    return "\33["+cmap[color]+"m"+text+"\33[0m"
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
