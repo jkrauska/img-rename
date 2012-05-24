@@ -26,13 +26,19 @@ def rename(pair):
     while os.path.exists(new):
         print "WARN: a file with the following name already exists:"
         print "  ", new
-        default = "0"
+        default = suggest_postfix(new)
         postfix = raw_input("Please specify a prefix to be appended [%s]: " % default)
         if not postfix:
             postfix = default
         new = set_file_postfix(new, postfix)
     os.rename(old, new)
     print_change(old, new)
+
+def suggest_postfix(file_path):
+    import itertools
+    for i in itertools.count():
+        if not os.path.exists(set_file_postfix(file_path, str(i))):
+            return str(i)
 
 def get_date_time_original(file_name):
     info = Image.open(file_name)._getexif()
