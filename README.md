@@ -1,5 +1,5 @@
 Script for renaming images based on their EXIF DateTimeOriginal field.
-All images in the specified folder(s) are renamed following the format `YYYY.MM.DD-hh.mm.ss.v.ext`, based on when it was taken.
+All images in the specified folder(s) are renamed following the format `YYYY.MM.DD-hh.mm.ss.ext`, based on when it was taken.
 
 Images without the field set, or without EXIF data altogether, are ignored.
 Should multiple images have the same DateTimeOriginal values, the script will prompt for a postfix to append to the filename.
