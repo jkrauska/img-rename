@@ -7,6 +7,7 @@ import imghdr
 import argparse
 
 DATE_TIME_ORIGINAL_TAG = 0x9003
+FILENAME_PATTERN = "([\d\.]{10}-[\d\.]{8})(-?.*)(\..*)$"
 
 def get_date_time_original(file_name):
     i = Image.open(file_name)
@@ -26,15 +27,15 @@ def list_files(path, recursive):
 def is_image(f):
     return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
 
-def make_new_name(file_path):
+def create_new_path(file_path):
     dirname = os.path.dirname(file_path)
     try:
         time_taken = get_date_time_original(file_path)
     except Exception:
         return file_path
-    name = time_taken.replace(' ', '_').replace(':', '.')
+    name = time_taken.replace(' ', '-').replace(':', '.')
     ext = os.path.splitext(file_path)[1].lower()
-    return os.path.join(dirname, "%s.0%s" % (name,ext))
+    return os.path.join(dirname, "%s%s" % (name,ext))
     
 def color(text, color):
     cmap = {'red': '0;31', 'green':'0;32'}
@@ -44,37 +45,28 @@ def print_change(old, new):
     print os.path.dirname(os.path.commonprefix((old, new)))
     print ' ', color(os.path.basename(old), 'red'), '->',
     print color(os.path.basename(new), 'green')
+    print
 
-def remove_duplicates(pairs):
-    return filter(lambda (x, y): x!=y, pairs)
-
-def bump_name(path):
-    def inc(m):
-        return m.group(1) + str(int(m.group(2))+1) + m.group(3)
-    return re.sub("(.*\.+)([\d]+)(\..*)$", inc, path)
-
-def ensure_uniqueness(names):
-    if not names:
-        return []
-    is_used = lambda name: os.path.exists(name) or name in unique_names
-    old, new = zip(*names)
-    unique_names = []
-    for name in new:
-        while is_used(name):
-            name = bump_name(name)
-        unique_names.append(name)
-    return zip(old, unique_names)
+def set_file_postfix(file_path, postfix):
+    def substitute_postfix(m):
+        return m.group(1) + "-" + postfix + m.group(3)
+    return re.sub(FILENAME_PATTERN, substitute_postfix, file_path)
 
 def rename(pair):
     old, new = pair
-    if os.path.exists(new):
-        print "WARN: file already exists! Could not rename:"
-    else:
-        os.rename(old, new)
+    while os.path.exists(new):
+        print "WARN: a file with the following name already exists:"
+        print "  ", new
+        default = "0"
+        postfix = raw_input("Please specify a prefix to be appended [%s]: " % default)
+        if not postfix:
+            postfix = default
+        new = set_file_postfix(new, postfix)
+    os.rename(old, new)
     print_change(old, new)
 
-def make_new_names(paths):
-    return map(make_new_name, paths)
+def needs_renaming(path):
+    return not re.match(".*"+FILENAME_PATTERN, path)
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
@@ -83,12 +75,13 @@ if __name__=='__main__':
     args = parser.parse_args()
 
     files = list_files(args.directory, args.recursive)
-    images = filter(is_image, files)
-    paths = map(os.path.abspath, images)
-    if paths:
-        new_names = make_new_names(paths)
-        pairs = zip(paths, new_names)
-        pairs = remove_duplicates(pairs)
-        pairs = ensure_uniqueness(pairs)
-        map(rename, pairs)
+    image_files = filter(is_image, files)
+    old_paths = map(os.path.abspath, image_files)
+    old_paths = filter(needs_renaming, old_paths)
+    if old_paths:
+        new_paths = map(create_new_path, old_paths)
+        pairs = zip(old_paths, new_paths)
+        pairs = filter(lambda (x,y): x!=y, pairs)
+        total = len(map(rename, pairs))
+        print "%d pictures renamed" % total
 
