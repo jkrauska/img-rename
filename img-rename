@@ -45,7 +45,7 @@ def create_new_path(old_path):
         return old_path
     name = time_taken.replace(' ', '-').replace(':', '.')
     ext = os.path.splitext(old_path)[1].lower()
-    return os.path.join(dirname, "%s%s" % (name,ext))
+    return os.path.join(dirname, name+ext)
 
 def get_date_time_original(file_name):
     info = Image.open(file_name)._getexif()
@@ -65,10 +65,9 @@ def set_file_postfix(file_path, postfix):
     return re.sub(FILENAME_PATTERN, substitute_postfix, file_path)
 
 def prompt_postfix(file_path):
-    print "WARN: a file with the following name already exists:"
-    print "  ", file_path
     default = suggest_postfix(file_path)
-    postfix = raw_input("Please specify a prefix to be appended [%s]: " % default)
+    print "!! Name in use:", file_path
+    postfix = raw_input("!! Please specify a postfix [%s]: " % default)
     if not postfix:
         return default
     return postfix
@@ -80,10 +79,11 @@ def suggest_postfix(file_path):
             return str(i)
 
 def print_change(old, new):
-    print os.path.dirname(os.path.commonprefix((old, new)))
-    print ' ', color(os.path.basename(old), 'red'), '->',
-    print color(os.path.basename(new), 'green')
-    print
+    print "%(dir)s\n  %(from)s -> %(to)s\n" % {
+        'dir': os.path.dirname(os.path.commonprefix((old, new))),
+        'from': color(os.path.basename(old), 'red'),
+        'to':color(os.path.basename(new), 'green')
+    }
 
 def color(text, color):
     cmap = {'red': '0;31', 'green':'0;32'}
