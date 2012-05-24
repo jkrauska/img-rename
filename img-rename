@@ -1,0 +1,98 @@
+#!/usr/bin/python
+
+import os
+import re
+import Image
+import imghdr
+import argparse
+
+DATE_TIME_ORIGINAL_TAG = 0x9003
+FILENAME_PATTERN = "([\d\.]{10}-[\d\.]{8})(-?.*)(\..*)$"
+
+def rename_files(directory, recursive):
+    files = list_files(args.directory, args.recursive)
+    image_files = filter(is_image, files)
+    old_paths = map(os.path.abspath, image_files)
+    old_paths = filter(needs_renaming, old_paths)
+    if old_paths:
+        new_paths = map(create_new_path, old_paths)
+        pairs = zip(old_paths, new_paths)
+        pairs = filter(lambda (x,y): x!=y, pairs)
+        total = len(map(rename, pairs))
+        print "%d pictures renamed" % total
+
+def list_files(path, recursive):
+    files = []
+    for dirpath, dirs, filenames in os.walk(path):
+        for f in filenames:
+            full = os.path.join(dirpath, f)
+            files.append(full)
+        if not recursive: 
+            break
+    return files
+
+def is_image(f):
+    return os.path.isfile(f) and imghdr.what(f) in ['jpeg', 'gif', 'png']
+
+def needs_renaming(path):
+    return not re.match(".*"+FILENAME_PATTERN, path)
+
+def create_new_path(old_path):
+    dirname = os.path.dirname(old_path)
+    try:
+        time_taken = get_date_time_original(old_path)
+    except Exception:
+        return old_path
+    name = time_taken.replace(' ', '-').replace(':', '.')
+    ext = os.path.splitext(old_path)[1].lower()
+    return os.path.join(dirname, name+ext)
+
+def get_date_time_original(file_name):
+    info = Image.open(file_name)._getexif()
+    return info[DATE_TIME_ORIGINAL_TAG]
+
+def rename(pair):
+    old, new = pair
+    while os.path.exists(new):
+        postfix = prompt_postfix(new)
+        new = set_file_postfix(new, postfix)
+    os.rename(old, new)
+    print_change(old, new)
+
+def set_file_postfix(file_path, postfix):
+    def substitute_postfix(m):
+        return m.group(1) + "-" + postfix + m.group(3)
+    return re.sub(FILENAME_PATTERN, substitute_postfix, file_path)
+
+def prompt_postfix(file_path):
+    default = suggest_postfix(file_path)
+    print "!! Name in use:", file_path
+    postfix = raw_input("!! Please specify a postfix [%s]: " % default)
+    if not postfix:
+        return default
+    return postfix
+
+def suggest_postfix(file_path):
+    import itertools
+    for i in itertools.count():
+        if not os.path.exists(set_file_postfix(file_path, str(i))):
+            return str(i)
+
+def print_change(old, new):
+    print "%(dir)s\n  %(from)s -> %(to)s\n" % {
+        'dir': os.path.dirname(os.path.commonprefix((old, new))),
+        'from': color(os.path.basename(old), 'red'),
+        'to':color(os.path.basename(new), 'green')
+    }
+
+def color(text, color):
+    cmap = {'red': '0;31', 'green':'0;32'}
+    return "\33["+cmap[color]+"m"+text+"\33[0m"
+
+if __name__=='__main__':
+    parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
+    parser.add_argument('-r', '--recursive', help='enable recursive renaming in subdirectories', action='store_true')
+    parser.add_argument('-d', '--directory', help='directory of files to rename (defaults to .)', default='.')
+    args = parser.parse_args()
+    rename_files(args.directory, args.recursive)
+
