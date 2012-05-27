@@ -8,7 +8,7 @@ Should multiple images have the same DateTimeOriginal values, the script will pr
 
     img-rename [-h] [-r] [-d DIRECTORY]
 
-    Rename image files based on the EXIF OriginalTime field.
+    Rename image files based on the EXIF DateTimeOriginal field.
 
     optional arguments:
       -h, --help            show this help message and exit

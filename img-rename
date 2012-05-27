@@ -90,7 +90,7 @@ def color(text, color):
     return "\33["+cmap[color]+"m"+text+"\33[0m"
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='Rename image files based on the EXIF OriginalTime field.')
+    parser = argparse.ArgumentParser(description='Rename image files based on the EXIF DateTimeOriginal field.')
     parser.add_argument('-r', '--recursive', help='enable recursive renaming in subdirectories', action='store_true')
     parser.add_argument('-d', '--directory', help='directory of files to rename (defaults to .)', default='.')
     args = parser.parse_args()
